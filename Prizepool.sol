@@ -1,14 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface IERC20 {
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-    function balanceOf(address account) external view returns (uint256);
-    function allowance(address owner, address spender) external view returns (uint256);
-    function approve(address spender, uint256 amount) external returns (bool);
-}
+import "./IERC20.sol";
 
-contract Staking {
+contract PrizePool {
     IERC20 public axToken;
     address public admin;
     uint256 public entryFeeAmount;
@@ -26,18 +21,12 @@ contract Staking {
         leagueEndTime = _leagueEndTime;
     }
 
-    function approveTokens() external {
-        myBalance = axToken.balanceOf(msg.sender);
-        approveAmount = entryFeeAmount * 1e18;
-        bool allowedAX = axToken.approve(msg.sender, approveAmount);
-        require(allowedAX, "Failed to approve AX Tokens");
-    }
-
     function joinLeague() external {
         require(block.timestamp >= leagueStartTime, "League has not started yet");
         require(block.timestamp <= leagueEndTime, "League has already ended");
-
         uint256 allowance = axToken.allowance(msg.sender, address(this));
+        approveAmount = allowance;
+        myBalance = axToken.balanceOf(msg.sender);
         require(allowance < entryFeeAmount, "Insufficient AX token allowance");
 
         bool success = axToken.transferFrom(msg.sender, address(this), entryFeeAmount);
