@@ -27,11 +27,11 @@ contract PrizePool {
         uint256 allowance = axToken.allowance(msg.sender, address(this));
         approveAmount = allowance;
         myBalance = axToken.balanceOf(msg.sender);
-        require(allowance < entryFeeAmount, "Insufficient AX token allowance");
+        require(allowance >= entryFeeAmount, "Insufficient AX token allowance");
 
         bool success = axToken.transferFrom(msg.sender, address(this), entryFeeAmount);
         require(success, "Failed to transfer AX tokens");
-        require(myBalance < entryFeeAmount, "Insufficient AX token balance");
+        //require(myBalance >= entryFeeAmount, "Insufficient AX token balance");
 
         stakedAmounts[msg.sender] += entryFeeAmount;
     }
