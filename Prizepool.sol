@@ -12,7 +12,6 @@ contract PrizePool {
     uint256 public approveAmount;
     uint256 public myBalance;
     mapping(address => uint256) public stakedAmounts;
-    mapping(address => bool) public allowedWithdrawals;
 
     constructor(address _axToken, uint256 _entryFeeAmount, uint256 _leagueStartTime, uint256 _leagueEndTime) {
         axToken = IERC20(_axToken);
@@ -23,7 +22,7 @@ contract PrizePool {
     }
 
     function joinLeague() external {
-        require(block.timestamp >= leagueStartTime, "League has not started yet");
+        //require(block.timestamp < leagueStartTime, "Grace Period");
         require(block.timestamp <= leagueEndTime, "League has already ended");
         uint256 allowance = axToken.allowance(msg.sender, address(this));
         approveAmount = allowance;
@@ -35,6 +34,15 @@ contract PrizePool {
         //require(myBalance >= entryFeeAmount, "Insufficient AX token balance");
 
         stakedAmounts[msg.sender] += entryFeeAmount;
+    }
+
+    function withdrawBeforeLeagueStarts() external {
+        require(block.timestamp < leagueStartTime, "Grace period has ended");
+        uint256 stakedAmount = stakedAmounts[msg.sender];
+        require(stakedAmount > 0, "No staked amount to withdraw");
+        stakedAmounts[msg.sender] = 0;
+        bool success = axToken.transfer(msg.sender, stakedAmount);
+        require(success, "Failed to transfer AX tokens");
     }
 
     function distributePrize(address winner) external {
@@ -49,14 +57,5 @@ contract PrizePool {
 
         bool success = payable(winner).send(winnerStakedAmount);
         require(success, "Failed to transfer AX tokens to winner");
-    }
-
-    function withdrawBeforeLeagueStarts() external {
-        require(block.timestamp < leagueStartTime, "Grace period has ended");
-        uint256 stakedAmount = stakedAmounts[msg.sender];
-        require(stakedAmount > 0, "No staked amount to withdraw");
-        stakedAmounts[msg.sender] = 0;
-        bool success = axToken.transfer(msg.sender, stakedAmount);
-        require(success, "Failed to transfer AX tokens");
     }
 }
