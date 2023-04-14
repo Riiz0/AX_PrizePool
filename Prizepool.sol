@@ -46,16 +46,16 @@ contract PrizePool {
     }
 
     function distributePrize(address winner) external {
-        require(msg.sender == admin, "Only admin can distribute prize");
-        require(block.timestamp >= leagueEndTime, "League has not ended yet");
+    require(msg.sender == admin, "Only admin can distribute prize");
+    require(block.timestamp >= leagueEndTime, "League has not ended yet");
 
-        uint256 totalStakedAmount = axToken.balanceOf(address(this));
-        uint256 winnerStakedAmount = stakedAmounts[winner];
+    uint256 totalStakedAmount = axToken.balanceOf(address(this));
+    uint256 winnerStakedAmount = stakedAmounts[winner];
 
-        require(winnerStakedAmount > 0, "Winner has no staked amount");
-        require(totalStakedAmount >= winnerStakedAmount, "Not enough AX tokens to distribute");
+    require(winnerStakedAmount > 0, "Winner has no staked amount");
+    require(totalStakedAmount >= winnerStakedAmount, "Not enough AX tokens to distribute");
 
-        bool success = payable(winner).send(winnerStakedAmount);
-        require(success, "Failed to transfer AX tokens to winner");
+    bool success = axToken.transfer(winner, winnerStakedAmount);
+    require(success, "Failed to transfer AX tokens to winner");
     }
 }
